@@ -1,5 +1,6 @@
 "use client";
 import React, { useState } from "react";
+import { APIError } from "../../../../../../packages/types/Error";
 import {
   Card,
   CardContent,
@@ -12,20 +13,40 @@ import { Button } from "@/components/ui/button";
 import { Label } from "@/components/ui/label";
 import Link from "next/link";
 import { toast } from "sonner";
+import { useMutation } from "@tanstack/react-query";
+import { AuthApi } from "../../../../../../packages/api/auth";
+import { useUser } from "../../../../../../packages/hooks/useUser";
 
 const SignIn = () => {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
 
+  const { setUser, token , user} = useUser();
+
+  const handleSignInMutation = useMutation({
+    mutationFn: () => AuthApi.signin({ email, password }),
+    onSuccess(data) {
+      setUser(data.data?.user, data.data.session.access_token);
+      console.log("i am ",user)
+      if (data?.message) {
+        toast.success(data?.message);
+      }
+    },
+    onError(error: APIError) {
+      if (error?.response?.data?.message) {
+        toast.error(error?.response?.data?.message);
+      }
+    },
+  });
+
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     // toast.loading("Loggin you in");
-    // toast.success("Loggin you in");
     // toast.info("Loggin you in");
     // toast.warning("Loggin you in");
-    // toast.error("Loggin you in");
-    // console.log("Email:", email);
-    // console.log("Password:", password);
+    console.log("Email:", email);
+    console.log("Password:", password);
+    handleSignInMutation.mutate();
   };
 
   return (
