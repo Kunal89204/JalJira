@@ -10,7 +10,12 @@ import {
   User,
   Settings,
   Menu,
+  Folder,
+  FolderOpen,
+  FolderKanban,
 } from "lucide-react";
+import { NewWorkspace } from "@/components/dialogs/NewWorkspace";
+import NewProject from "@/components/dialogs/NewProject";
 import Link from "next/link";
 import {
   DropdownMenu,
@@ -28,16 +33,8 @@ interface DashboardLayoutProps {
 
 const navItems = [
   { name: "Dashboard", href: "/dashboard", icon: <Home className="w-5 h-5" /> },
-  {
-    name: "Tasks",
-    href: "/dashboard/tasks",
-    icon: <User className="w-5 h-5" />,
-  },
-  {
-    name: "Members",
-    href: "/dashboard/members",
-    icon: <Settings className="w-5 h-5" />,
-  },
+  { name: "Tasks", href: "/dashboard/tasks", icon: <User className="w-5 h-5" /> },
+  { name: "Members", href: "/dashboard/members", icon: <Settings className="w-5 h-5" /> },
 ];
 
 const workspaces = [
@@ -46,9 +43,17 @@ const workspaces = [
   { name: "Marketing Hub" },
 ];
 
+const projects = [
+  { name: "Website Redesign", icon: <Folder className="w-4 h-4 text-blue-600" /> },
+  { name: "AI Chatbot", icon: <FolderOpen className="w-4 h-4 text-purple-600" /> },
+  { name: "Mobile App", icon: <FolderKanban className="w-4 h-4 text-emerald-600" /> },
+];
+
 const DashboardLayout = ({ children }: DashboardLayoutProps) => {
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const [showDialog, setShowDialog] = useState(true);
+  const [wsDialog, setWsDialog] = useState<boolean>(false);
+  const [projectDialog, setProjectDialog] = useState<boolean>(false);
 
   return (
     <div className="flex min-h-screen bg-white">
@@ -68,25 +73,26 @@ const DashboardLayout = ({ children }: DashboardLayoutProps) => {
         <div className="px-4">
           <div className="flex justify-between items-center mb-1">
             <p className="text-sm text-gray-500 font-semibold">Workspaces</p>
-            <div className="border h-5 w-5 flex justify-center items-center rounded-full cursor-pointer text-gray-600 font-semibold hover:bg-gray-100 transition">
+            <div
+              onClick={() => setWsDialog(true)}
+              className="border h-5 w-5 flex justify-center items-center rounded-full cursor-pointer text-gray-600 font-semibold hover:bg-gray-100 transition"
+            >
               <Plus className="w-3 h-3" />
             </div>
           </div>
           <DropdownMenu>
-            <div
-              className="flex justify-between items-center py-2 px-2 cursor-pointer hover:bg-gray-200 rounded-md transition"
-            
-            >
-              <DropdownMenuTrigger  onClick={() => setShowDialog(!showDialog)} className="flex items-center space-x-2 focus:outline-none cursor-pointer">
-                <p  onClick={() => setShowDialog(!showDialog)} className="bg-black text-white rounded-lg aspect-square px-4 py-2 font-semibold">
+            <div className="flex justify-between items-center py-2 px-2 cursor-pointer hover:bg-gray-200 rounded-md transition">
+              <DropdownMenuTrigger
+                onClick={() => setShowDialog(!showDialog)}
+                className="flex items-center space-x-2 focus:outline-none cursor-pointer"
+              >
+                <p className="bg-black text-white rounded-lg aspect-square px-4 py-2 font-semibold">
                   E
                 </p>
-                <span  onClick={() => setShowDialog(!showDialog)} className="text-base font-semibold text-black">
-                  Engineering Core
-                </span>
+                <span className="text-base font-semibold text-black">Engineering Core</span>
 
                 {showDialog ? (
-                  <ChevronDown  onClick={() => setShowDialog(!showDialog)} className="w-4 h-4 text-gray-600" />
+                  <ChevronDown className="w-4 h-4 text-gray-600" />
                 ) : (
                   <ChevronRight className="w-4 h-4 text-gray-600" />
                 )}
@@ -102,10 +108,13 @@ const DashboardLayout = ({ children }: DashboardLayoutProps) => {
               <DropdownMenuSeparator />
               <div className="border-b pb-1">
                 {workspaces.map((item, index) => (
-                  <DropdownMenuItem className="py-2 hover:bg-gray-200 cursor-pointer duration-500 transition-all justify-between">
+                  <DropdownMenuItem
+                    key={index}
+                    className="py-2 hover:bg-gray-200 cursor-pointer duration-500 transition-all justify-between"
+                  >
                     <div className="flex gap-2 items-center justify-between">
-                      <div className="border aspect-square  text-sm  h-5 flex items-center justify-center rounded border-gray-300">
-                        {item.name.split("")[0]}
+                      <div className="border aspect-square text-sm h-5 flex items-center justify-center rounded border-gray-300">
+                        {item.name.charAt(0)}
                       </div>
                       {item.name}
                     </div>
@@ -113,18 +122,21 @@ const DashboardLayout = ({ children }: DashboardLayoutProps) => {
                   </DropdownMenuItem>
                 ))}
               </div>
-              <div className="flex px-2 gap-1 my-1 hover:bg-gray-100 py-2 rounded cursor-pointer duration-300 transition-all">
+              <div
+                className="flex px-2 gap-1 my-1 hover:bg-gray-100 py-2 rounded cursor-pointer duration-300 transition-all"
+                onClick={() => setWsDialog(true)}
+              >
                 <div className="border rounded-sm p-1">
                   <Plus size={14} />
                 </div>
-                <p className="text-sm text-gray-700 ">Add workspace</p>
+                <p className="text-sm text-gray-700">Add workspace</p>
               </div>
             </DropdownMenuContent>
           </DropdownMenu>
         </div>
 
         {/* Navigation */}
-        <nav className="flex-1 px-4 py-6 ">
+        <nav className="px-4 py-6">
           {navItems.map((item) => (
             <Link
               key={item.name}
@@ -136,6 +148,36 @@ const DashboardLayout = ({ children }: DashboardLayoutProps) => {
             </Link>
           ))}
         </nav>
+
+        {/* Projects Section */}
+        <div className="flex-1 bg-gray-50 px-4 pb-6 overflow-y-auto">
+          <div className="border-t mb-2"></div>
+
+          <div className="flex justify-between items-center mb-1">
+            <p className="text-sm text-gray-500 font-semibold">Projects</p>
+            <div
+              onClick={() => setProjectDialog(true)}
+              className="border h-5 w-5 flex justify-center items-center rounded-full cursor-pointer text-gray-600 font-semibold hover:bg-gray-100 transition"
+            >
+              <Plus className="w-3 h-3" />
+            </div>
+          </div>
+
+          <div className="mt-2 space-y-1">
+            {projects.map((project, index) => (
+              <Link
+                href={`/dashboard/projects/${project.name
+                  .toLowerCase()
+                  .replace(/\s+/g, "-")}`}
+                key={index}
+                className="flex items-center gap-2 text-gray-700 hover:bg-gray-100 rounded-md px-2 py-2 text-sm font-medium transition"
+              >
+                {project.icon}
+                <span>{project.name}</span>
+              </Link>
+            ))}
+          </div>
+        </div>
       </aside>
 
       {/* Sidebar for small screens */}
@@ -149,17 +191,12 @@ const DashboardLayout = ({ children }: DashboardLayoutProps) => {
             <Menu className="w-5 h-5" />
           </Button>
         </SheetTrigger>
-
-        {/* Adjusted Dialog Position */}
-        <SheetContent
-          side="left"
-          className="p-0 w-64 translate-x-6 shadow-lg rounded-r-xl"
-        >
+        <SheetContent side="left" className="p-0 w-64 shadow-lg rounded-r-xl">
           <div className="flex flex-col h-full bg-white shadow-md rounded-r-xl">
             <div className="flex items-center justify-center h-20 border-b">
               <span className="text-xl font-bold">Unweb</span>
             </div>
-            <nav className="flex-1 px-4 py-6 ">
+            <nav className="flex-1 px-4 py-6">
               {navItems.map((item) => (
                 <Link
                   key={item.name}
@@ -180,6 +217,10 @@ const DashboardLayout = ({ children }: DashboardLayoutProps) => {
       <main className="flex-1 p-6 md:p-8 overflow-auto max-w-[1440px] mx-auto">
         {children}
       </main>
+
+      {/* Dialogs */}
+      <NewWorkspace open={wsDialog} onOpenChange={setWsDialog} />
+      <NewProject open={projectDialog} onOpenChange={setProjectDialog} />
     </div>
   );
 };

@@ -21,13 +21,13 @@ const SignIn = () => {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
 
-  const { setUser, token , user} = useUser();
+  const { setUser, token, user } = useUser();
 
   const handleSignInMutation = useMutation({
     mutationFn: () => AuthApi.signin({ email, password }),
     onSuccess(data) {
       setUser(data.data?.user, data.data.session.access_token);
-      console.log("i am ",user)
+      console.log("i am ", user);
       if (data?.message) {
         toast.success(data?.message);
       }
@@ -82,13 +82,17 @@ const SignIn = () => {
                 required
               />
             </div>
-            <Button type="submit" className="w-full mt-2">
-              Sign In
+            <Button
+              disabled={handleSignInMutation.isPending}
+              type="submit"
+              className="w-full mt-2"
+            >
+              {handleSignInMutation.isPending ? "Signing In...." : "Sign In"}
             </Button>
           </form>
         </CardContent>
         <div className="text-center py-4 text-sm text-gray-600">
-          Don't have an account?{" "}
+          Don&apos;t have an account?{" "}
           <Link href="/signup" className="text-blue-500 hover:underline">
             Sign up
           </Link>

@@ -1,45 +1,45 @@
 "use client";
+
 import React, { ReactNode, useEffect } from "react";
-import { useRouter, usePathname } from "next/navigation";
+import { usePathname, useRouter } from "next/navigation";
 import { useUser } from "../../../../packages/hooks/useUser";
 
 interface AuthWrapperProps {
   children: ReactNode;
   fallback?: ReactNode;
-  redirectTo?: string; // where to go if unauthenticated
-  allowPublic?: boolean; // allow unauthenticated users on public pages
 }
 
 const AuthWrapper: React.FC<AuthWrapperProps> = ({
   children,
   fallback = <div>Loading...</div>,
-  redirectTo = "/auth/sign-in",
-  allowPublic = false,
 }) => {
-  const { isAuthenticated } = useUser();
   const router = useRouter();
   const pathname = usePathname();
+  const { isAuthenticated } = useUser();
 
-  const publicPages = ["/auth/sign-in", "/auth/sign-up"];
+  // Define route groups
+  const publicRoutes = ["/auth/sign-in", "/auth/sign-up"];
+  const protectedRoutes = ["/dashboard/*", "/profile", "/settings"]; // add yours
 
-  const isPublicPage = publicPages.includes(pathname);
+  const isPublic = publicRoutes.includes(pathname);
+  const isProtected = protectedRoutes.some((route) =>
+    pathname.startsWith(route)
+  );
 
   useEffect(() => {
-    if (!isAuthenticated && !isPublicPage) {
-      // Redirect only if trying to access a protected page
-      router.replace(redirectTo);
+    // If user not logged in and accessing protected route → redirect
+    if (!isAuthenticated && isProtected) {
+      router.replace("/auth/sign-in");
     }
-    if (isAuthenticated && isPublicPage) {
-      // Redirect logged-in user away from login/signup
-      router.replace("/dashboard"); // or your dashboard/home
-    }
-  }, [isAuthenticated, isPublicPage, router, redirectTo]);
 
-  // Show fallback while auth is initializing or redirecting
-  if (
-    (!isAuthenticated && !isPublicPage) ||
-    (isAuthenticated && isPublicPage)
-  ) {
+    // If user logged in and accessing a public route → redirect
+    if (isAuthenticated && isPublic) {
+      router.replace("/dashboard");
+    }
+  }, [isAuthenticated, isProtected, isPublic, router]);
+
+  // Show fallback during redirect or auth check
+  if ((isProtected && !isAuthenticated) || (isPublic && isAuthenticated)) {
     return <>{fallback}</>;
   }
 
