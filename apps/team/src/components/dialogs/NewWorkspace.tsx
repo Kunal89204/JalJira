@@ -10,8 +10,9 @@ import {
 } from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { useState } from "react";
-import { toast } from "sonner"; // Optional if you use Sonner/Toast for notifications
+import Image from "next/image";
+import { useState, useRef } from "react";
+import { toast } from "sonner"; // Optional notifications
 
 interface DialogDemoProps {
   open: boolean;
@@ -21,9 +22,14 @@ interface DialogDemoProps {
 export function NewWorkspace({ open, onOpenChange }: DialogDemoProps) {
   const [workspaceName, setWorkspaceName] = useState("");
   const [workspaceDescription, setWorkspaceDescription] = useState("");
+  const [workspaceImage, setWorkspaceImage] = useState<string | null>(null);
+  const [workspaceFile, setWorkspaceFile] = useState<File | null>(null);
   const [errors, setErrors] = useState<{ name?: string; description?: string }>({});
   const [isSaving, setIsSaving] = useState(false);
 
+  const fileInputRef = useRef<HTMLInputElement | null>(null);
+
+  // Form validation
   const validateForm = () => {
     const newErrors: { name?: string; description?: string } = {};
     if (!workspaceName.trim()) {
@@ -42,6 +48,17 @@ export function NewWorkspace({ open, onOpenChange }: DialogDemoProps) {
     return Object.keys(newErrors).length === 0;
   };
 
+  // Handle file upload + preview
+  const handleImageUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (file) {
+      setWorkspaceFile(file);
+
+      const previewUrl = URL.createObjectURL(file);
+      setWorkspaceImage(previewUrl);
+    }
+  };
+
   const handleSave = async (e: React.MouseEvent<HTMLButtonElement>) => {
     e.preventDefault();
     if (isSaving) return;
@@ -52,19 +69,30 @@ export function NewWorkspace({ open, onOpenChange }: DialogDemoProps) {
     setIsSaving(true);
 
     try {
-      // Simulated async API request (replace this with actual API call)
-      await new Promise((resolve) => setTimeout(resolve, 1000));
+      // Prepare form data
+      const formData = new FormData();
+      formData.append("workspaceName", workspaceName.trim());
+      formData.append("workspaceDescription", workspaceDescription.trim());
+      if (workspaceFile) formData.append("workspaceImage", workspaceFile);
 
-      console.log("Workspace saved:", {
-        workspaceName: workspaceName.trim(),
-        workspaceDescription: workspaceDescription.trim(),
+      // Debug log for all data (simulating API call)
+      console.log("Form data before upload:");
+      console.log({
+        workspaceName,
+        workspaceDescription,
+        workspaceFile,
       });
+
+      // Simulate async upload
+      await new Promise((resolve) => setTimeout(resolve, 1000));
 
       toast?.success?.("Workspace created successfully!");
 
-      // Reset and close dialog
+      // Reset everything
       setWorkspaceName("");
       setWorkspaceDescription("");
+      setWorkspaceImage(null);
+      setWorkspaceFile(null);
       onOpenChange(false);
     } catch (error) {
       console.error("Error saving workspace:", error);
@@ -81,11 +109,41 @@ export function NewWorkspace({ open, onOpenChange }: DialogDemoProps) {
           <DialogHeader>
             <DialogTitle>Create New Workspace</DialogTitle>
             <DialogDescription>
-              Provide a name and description for your workspace.
+              Provide a name, description, and optional image for your workspace.
             </DialogDescription>
           </DialogHeader>
 
           <div className="grid gap-4">
+
+            {/* Image Upload Section */}
+            <div className="grid gap-2">
+              <Label>Workspace Image</Label>
+              <div
+                onClick={() => fileInputRef.current?.click()}
+                className="w-32 mx-auto h-32 border border-dashed border-gray-400 flex items-center justify-center rounded-lg cursor-pointer hover:bg-gray-50"
+              >
+                {workspaceImage ? (
+                  <Image
+                    src={workspaceImage}
+                    alt="Workspace Preview"
+                    width={200}
+                    height={200}
+                    className="object-cover w-full h-full rounded-lg"
+                  />
+                ) : (
+                  <span className="text-gray-500 text-sm text-center">Click to upload image</span>
+                )}
+              </div>
+              <input
+                type="file"
+                accept="image/*"
+                className="hidden"
+                ref={fileInputRef}
+                onChange={handleImageUpload}
+              />
+            </div>
+
+            {/* Name Field */}
             <div className="grid gap-2">
               <Label htmlFor="workspace-name">Name</Label>
               <Input
@@ -101,6 +159,7 @@ export function NewWorkspace({ open, onOpenChange }: DialogDemoProps) {
               )}
             </div>
 
+            {/* Description Field */}
             <div className="grid gap-2">
               <Label htmlFor="workspace-description">Description</Label>
               <Input

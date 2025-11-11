@@ -41,9 +41,6 @@ const SignIn = () => {
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    // toast.loading("Loggin you in");
-    // toast.info("Loggin you in");
-    // toast.warning("Loggin you in");
     console.log("Email:", email);
     console.log("Password:", password);
     handleSignInMutation.mutate();
@@ -93,7 +90,7 @@ const SignIn = () => {
         </CardContent>
         <div className="text-center py-4 text-sm text-gray-600">
           Don&apos;t have an account?{" "}
-          <Link href="/signup" className="text-blue-500 hover:underline">
+          <Link href="/auth/sign-up" className="text-blue-500 hover:underline">
             Sign up
           </Link>
         </div>
