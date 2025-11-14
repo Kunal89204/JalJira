@@ -16,20 +16,28 @@ import { toast } from "sonner";
 import { useMutation } from "@tanstack/react-query";
 import { AuthApi } from "../../../../../../packages/api/auth";
 import { useUser } from "../../../../../../packages/hooks/useUser";
+import { useRouter } from "next/navigation";
 
 const SignIn = () => {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
+  const router = useRouter()
 
   const { setUser, token, user } = useUser();
 
   const handleSignInMutation = useMutation({
     mutationFn: () => AuthApi.signin({ email, password }),
     onSuccess(data) {
-      setUser(data.data?.user, data.data.session.access_token);
+      setUser(data.data?.user, data.data.session.access_token, data?.hasWorkspace);
       console.log("i am ", user);
+
+
       if (data?.message) {
         toast.success(data?.message);
+
+        if(data?.hasWorkspace){
+          router.push(`/dashboard/${data?.worskpaceId}`)
+        }
       }
     },
     onError(error: APIError) {

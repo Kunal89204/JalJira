@@ -16,7 +16,7 @@ import { toast } from "sonner"; // Optional notifications
 
 interface DialogDemoProps {
   open: boolean;
-  onOpenChange: (open: boolean) => void;
+  onOpenChange?: (open: boolean) => void;
 }
 
 export function NewWorkspace({ open, onOpenChange }: DialogDemoProps) {
@@ -24,7 +24,9 @@ export function NewWorkspace({ open, onOpenChange }: DialogDemoProps) {
   const [workspaceDescription, setWorkspaceDescription] = useState("");
   const [workspaceImage, setWorkspaceImage] = useState<string | null>(null);
   const [workspaceFile, setWorkspaceFile] = useState<File | null>(null);
-  const [errors, setErrors] = useState<{ name?: string; description?: string }>({});
+  const [errors, setErrors] = useState<{ name?: string; description?: string }>(
+    {}
+  );
   const [isSaving, setIsSaving] = useState(false);
 
   const fileInputRef = useRef<HTMLInputElement | null>(null);
@@ -93,7 +95,7 @@ export function NewWorkspace({ open, onOpenChange }: DialogDemoProps) {
       setWorkspaceDescription("");
       setWorkspaceImage(null);
       setWorkspaceFile(null);
-      onOpenChange(false);
+      onOpenChange?.(false);
     } catch (error) {
       console.error("Error saving workspace:", error);
       toast?.error?.("Failed to create workspace. Please try again.");
@@ -109,12 +111,12 @@ export function NewWorkspace({ open, onOpenChange }: DialogDemoProps) {
           <DialogHeader>
             <DialogTitle>Create New Workspace</DialogTitle>
             <DialogDescription>
-              Provide a name, description, and optional image for your workspace.
+              Provide a name, description, and optional image for your
+              workspace.
             </DialogDescription>
           </DialogHeader>
 
           <div className="grid gap-4">
-
             {/* Image Upload Section */}
             <div className="grid gap-2">
               <Label>Workspace Image</Label>
@@ -131,7 +133,9 @@ export function NewWorkspace({ open, onOpenChange }: DialogDemoProps) {
                     className="object-cover w-full h-full rounded-lg"
                   />
                 ) : (
-                  <span className="text-gray-500 text-sm text-center">Click to upload image</span>
+                  <span className="text-gray-500 text-sm text-center">
+                    Click to upload image
+                  </span>
                 )}
               </div>
               <input
@@ -171,7 +175,9 @@ export function NewWorkspace({ open, onOpenChange }: DialogDemoProps) {
                 disabled={isSaving}
               />
               {errors.description && (
-                <span className="text-sm text-red-500">{errors.description}</span>
+                <span className="text-sm text-red-500">
+                  {errors.description}
+                </span>
               )}
             </div>
           </div>

@@ -1,23 +1,33 @@
 import { StateCreator } from "zustand";
-import {SupabaseUser} from "../../../packages/types/SupabaseUser"
+import { SupabaseUser } from "../../../packages/types/SupabaseUser";
+
 export interface AuthState {
   user: SupabaseUser | null;
   token: string | null;
   isAuthenticated: boolean;
-  setUser: (user: SupabaseUser, token: string) => void;
+  hasWorkspace: boolean;
+
+  setUser: (
+    user: SupabaseUser | null, 
+    token: string | null, 
+    hasWorkspace: boolean
+  ) => void;
+
   logout: () => void;
 }
 
-export const createAuthSlice: StateCreator<AuthState> = (set, get) => ({
+export const createAuthSlice: StateCreator<AuthState> = (set) => ({
   user: null,
   token: null,
   isAuthenticated: false,
+  hasWorkspace: false,
 
-  setUser: (user, token) =>
+  setUser: (user, token, hasWorkspace) =>
     set({
       user,
       token,
-      isAuthenticated: !!token,
+      isAuthenticated: Boolean(token),
+      hasWorkspace,
     }),
 
   logout: () => {
@@ -25,9 +35,9 @@ export const createAuthSlice: StateCreator<AuthState> = (set, get) => ({
       user: null,
       token: null,
       isAuthenticated: false,
+      hasWorkspace: false,
     });
 
-    // Redirect to login
     if (typeof window !== "undefined") {
       window.location.href = "/auth/sign-in";
     }
